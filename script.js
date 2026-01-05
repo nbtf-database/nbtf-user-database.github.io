@@ -1,55 +1,63 @@
-async function loadFactions() {
-  const res = await fetch('data/factions.json');
-  const factions = await res.json();
-  const container = document.getElementById('factions');
-  container.innerHTML = '<h2>Factions</h2>';
+const DISCORD_WEBHOOK_URL = "PUT_YOUR_WEBHOOK_URL_HERE";
 
-  factions.forEach(f => {
-    container.innerHTML += `
+async function loadFactions() {
+  const data = await fetch('data/factions.json').then(r=>r.json());
+  const el = document.getElementById('factions');
+  el.innerHTML = '<h2>Factions</h2>';
+  data.forEach(f => {
+    el.innerHTML += `
       <div class="card">
         <img src="${f.logo}">
         <div>
-          <h3>${f.name}</h3>
-          <p>Members: ${f.members.join(', ')}</p>
+          <strong>${f.name}</strong>
+          <div>${f.members.length} members</div>
         </div>
       </div>`;
   });
 }
 
 async function loadLeaderboard() {
-  const res = await fetch('data/leaderboard.json');
-  const users = await res.json();
-  const container = document.getElementById('leaderboard');
-  container.innerHTML = '<h2>Leaderboard</h2>';
-
-  users.forEach(u => {
-    container.innerHTML += `
+  const data = await fetch('data/leaderboard.json').then(r=>r.json());
+  const el = document.getElementById('leaderboard');
+  el.innerHTML = '<h2>Rankings</h2>';
+  data.forEach((u,i) => {
+    el.innerHTML += `
       <div class="card">
+        <strong>#${i+1}</strong>
         <img src="${u.avatar}">
         <div>
-          <h3>${u.username}</h3>
-          <p>${u.specialty}</p>
-          <div>${u.ranks.map(r => `<span class="badge">${r}</span>`).join('')}</div>
+          <div>${u.username}</div>
+          <div>${u.specialty}</div>
+          <div>${u.ranks.map(r=>`<span class="badge">${r}</span>`).join('')}</div>
         </div>
       </div>`;
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadFactions();
-  loadLeaderboard();
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadFactions(); loadLeaderboard();
 
-  document.getElementById('requestForm').addEventListener('submit', e => {
+  document.getElementById('requestForm').onsubmit = async e => {
     e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.target).entries());
-    console.log('SERVICE REQUEST:', data);
-    document.getElementById('formStatus').innerText =
-      'Request submitted successfully (logged to console / backend-ready).';
+    const data = Object.fromEntries(new FormData(e.target));
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        content:`**New Service Request**
+User: ${data.username}
+Faction: ${data.faction||'None'}
+Type: ${data.requestType}
+Budget: ${data.budget}
+${data.description}`
+      })
+    });
+    document.getElementById('formStatus').innerText = "Request sent successfully.";
     e.target.reset();
-  });
+  }
 });
 
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
 }

@@ -1,8 +1,11 @@
 [
   {
-    "username": "Alpha",
-    "specialty": "Assault",
+    "username": "Marlowww",
+    "specialty": "Combat Grandmaster",
     "avatar": "assets/user1.png",
-    "ranks": ["Combat IV", "Combat Master I"]
+    "ranks": [
+      "Combat IV",
+      "Combat Master III"
+    ]
   }
 ]
